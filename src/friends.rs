@@ -404,7 +404,7 @@ impl<Manager> Friend<Manager> {
     }
 
     /// Returns a small (32x32) avatar for the user in RGBA format
-    pub fn small_avatar(&self) -> Option<Vec<u8>> {
+    pub fn small_avatar(&self) -> Option<(u32, u32, Vec<u8>)> {
         unsafe {
             let utils = sys::SteamAPI_SteamUtils_v010();
             let img = sys::SteamAPI_ISteamFriends_GetSmallFriendAvatar(self.friends, self.id.0);
@@ -426,7 +426,7 @@ impl<Manager> Friend<Manager> {
             ) {
                 return None;
             }
-            Some(dest)
+            Some((width, height, dest))
         }
     }
 
