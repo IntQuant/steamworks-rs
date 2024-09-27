@@ -400,7 +400,7 @@ impl<Manager> Friend<Manager> {
     }
 
     /// Returns a small (32x32) avatar for the user in RGBA format
-    pub fn small_avatar(&self) -> Option<Vec<u8>> {
+    pub fn small_avatar(&self) -> Option<(u32, u32, Vec<u8>)> {
         unsafe {
             let utils = sys::SteamAPI_SteamUtils_v010();
             let img = sys::SteamAPI_ISteamFriends_GetSmallFriendAvatar(self.friends, self.id.0);
@@ -412,13 +412,17 @@ impl<Manager> Friend<Manager> {
             if !sys::SteamAPI_ISteamUtils_GetImageSize(utils, img, &mut width, &mut height) {
                 return None;
             }
-            assert_eq!(width, 32);
-            assert_eq!(height, 32);
-            let mut dest = vec![0; 32 * 32 * 4];
-            if !sys::SteamAPI_ISteamUtils_GetImageRGBA(utils, img, dest.as_mut_ptr(), 32 * 32 * 4) {
+            let dest_buffer_size = width * height * 4;
+            let mut dest = vec![0; dest_buffer_size.try_into().ok()?];
+            if !sys::SteamAPI_ISteamUtils_GetImageRGBA(
+                utils,
+                img,
+                dest.as_mut_ptr(),
+                dest_buffer_size.try_into().ok()?,
+            ) {
                 return None;
             }
-            Some(dest)
+            Some((width, height, dest))
         }
     }
 
